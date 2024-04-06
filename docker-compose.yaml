@@ -18,8 +18,7 @@ services:
   admin_movies:
     container_name: admin_movies
     build: ./
-#    restart: always
-    command: python movies_admin/manage.py runserver 0.0.0.0:8000
+    restart: always
     ports:
       - 8010:8000
     env_file:
