@@ -1,0 +1,33 @@
+version: '3.8'
+volumes:
+  pgdbdata:
+
+services:
+  pgdb:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    container_name: pgdb
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+    ports:
+      - 5433:5432
+
+  admin_movies:
+    container_name: admin_movies
+    build: ./
+#    restart: always
+    command: python movies_admin/manage.py runserver 0.0.0.0:8000
+    ports:
+      - 8010:8000
+    env_file:
+      - movies_admin/config/.env
+    depends_on:
+      - pgdb
+
+
+
+
+
