@@ -30,6 +30,8 @@ services:
     volumes:
       - static:/app/static/
       - media:/app/media/
+    environment:
+      - COMPOSE_BUILD_NO_CACHE=1
 
   nginx:
     image: nginx:latest
@@ -41,6 +43,8 @@ services:
       - admin_movies
     ports:
       - 80:80
+    environment:
+      - COMPOSE_BUILD_NO_CACHE=1
 
 
 

@@ -1,20 +1,20 @@
 import os
+import socket
 from pathlib import Path
 
 from dotenv import load_dotenv
-from split_settings.tools import include
 
 load_dotenv()
 
-include(
-    'components/database.py',
-)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = os.environ.get('DEBUG', False) == 'True'
+if 'local' not in socket.gethostname():
+    DEBUG = False
+else:
+    DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
@@ -74,6 +74,20 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST') if not DEBUG else os.environ.get('LOCAL_DB_HOST'),
+        'PORT': os.environ.get('DB_PORT') if not DEBUG else os.environ.get('LOCAL_DB_PORT'),
+        'OPTIONS': {
+            'options': '-c search_path=public,content'
+        }
+    }
+}
 
 
 LANGUAGE_CODE = 'ru-RU'
