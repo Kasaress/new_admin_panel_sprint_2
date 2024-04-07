@@ -12,15 +12,7 @@ class MoviesApiMixin:
     http_method_names = ['get']
 
     def get_queryset(self):
-        # return Filmwork.objects.values(
-        #     'id',
-        #     'title',
-        #     'description',
-        #     'creation_date',
-        #     'rating',
-        #     'type',
-        # qs = Filmwork.objects.defer('created', 'modified').values(
-        qs = Filmwork.objects.values(
+        return Filmwork.objects.values(
                 'id',
                 'title',
                 'description',
@@ -53,10 +45,6 @@ class MoviesApiMixin:
                 ), distinct=True
             )
         )
-        # sql_query = qs.query.__str__()
-        # print(f'{sql_query=}')
-
-        return qs
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context)
