@@ -1,41 +1,94 @@
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Q
 from django.http import JsonResponse
-from django.views import View
+from django.views.generic import DetailView
+from django.views.generic.list import BaseListView
 
-class MoviesListApi(View):
+from movies.models import Filmwork
+
+
+class MoviesApiMixin:
+    model = Filmwork
     http_method_names = ['get']
 
-    def get(self, request, *args, **kwargs):
-        # Получение и обработка данных
-        print('fffff')
-        return JsonResponse(
-            {
-                "count": 1000,
-                "total_pages": 20,
-                "prev": 1,
-                "next": 2,
-                "results": [
-                    {
-                        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                        "title": "Crescent Star",
-                        "description": "In 1944, the Germans began rounding up the Jews of Rhodes.",
-                        "creation_date": "2024-04-07",
-                        "rating": 7.9,
-                        "type": "movie",
-                        "genres": [
-                            "Drama",
-                            "Short"
-                        ],
-                        "actors": [
-                            "Darrell Geer",
-                            "Michael Bond"
-                        ],
-                        "directors": [
-                            "Turgut Turk Adiguzel"
-                        ],
-                        "writers": [
-                            "Turgut Turk Adiguzel"
-                        ]
-                    }
-                ]
-            }
+    def get_queryset(self):
+        # return Filmwork.objects.values(
+        #     'id',
+        #     'title',
+        #     'description',
+        #     'creation_date',
+        #     'rating',
+        #     'type',
+        # qs = Filmwork.objects.defer('created', 'modified').values(
+        qs = Filmwork.objects.values(
+                'id',
+                'title',
+                'description',
+                'creation_date',
+                'rating',
+                'type',
+        ).annotate(
+            genres=ArrayAgg(
+                'genres__name', distinct=True
+            )
+        ).annotate(
+            actors=ArrayAgg(
+                'personfilmwork__person__full_name',
+                filter=Q(
+                    personfilmwork__role='actor'
+                ), distinct=True
+            )
+        ).annotate(
+            directors=ArrayAgg(
+                'personfilmwork__person__full_name',
+                filter=Q(
+                    personfilmwork__role='director'
+                ), distinct=True
+            )
+        ).annotate(
+            writers=ArrayAgg(
+                'personfilmwork__person__full_name',
+                filter=Q(
+                    personfilmwork__role='writer'
+                ), distinct=True
+            )
         )
+        # sql_query = qs.query.__str__()
+        # print(f'{sql_query=}')
+
+        return qs
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context)
+
+
+class MoviesListApi(MoviesApiMixin, BaseListView):
+    paginate_by = 50
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        data = self.get_queryset()
+        paginator, page, object_list, _ = self.paginate_queryset(
+            data, self.paginate_by
+        )
+        count = paginator.count
+        total_pages = paginator.num_pages
+        previous_page = (
+            page.previous_page_number() if page.has_previous() else None
+        )
+        next_page = page.next_page_number() if page.has_next() else None
+
+        context = {
+            'count': count,
+            'total_pages': total_pages,
+            'prev': previous_page,
+            'next': next_page,
+            'results': list(object_list)
+        }
+        return context
+
+
+class MoviesDetailApi(MoviesApiMixin, DetailView):
+    pk_url_kwarg = 'id'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        return super().get_object()

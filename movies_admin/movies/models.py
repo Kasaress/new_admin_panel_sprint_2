@@ -71,7 +71,10 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
         verbose_name = _('movie')
         verbose_name_plural = _('movies')
         indexes = [
-            models.Index(fields=['creation_date', 'rating'], name='film_work_creation_rating_idx'),
+            models.Index(
+                fields=['creation_date', 'rating'],
+                name='film_work_creation_rating_idx'
+            ),
         ]
 
     def __str__(self):
@@ -92,11 +95,15 @@ class GenreFilmwork(UUIDMixin):
         verbose_name = _('genre_film_work')
         verbose_name_plural = _('genre_film_works')
         indexes = [
-            models.Index(fields=['film_work_id', 'genre_id'], name='film_work_genre_idx'),
+            models.Index(
+                fields=['film_work_id', 'genre_id'],
+                name='film_work_genre_idx'
+            ),
         ]
 
     def __str__(self):
         return f'Жанры кинопроизведения {self.film_work.title}'
+
 
 class PersonFilmwork(UUIDMixin):
     class TypeChoices(models.TextChoices):
@@ -118,7 +125,10 @@ class PersonFilmwork(UUIDMixin):
         verbose_name = _('person_film_work')
         verbose_name_plural = _('person_film_works')
         indexes = [
-            models.Index(fields=['film_work_id', 'person_id', 'role'], name='film_work_person_idx'),
+            models.Index(
+                fields=['film_work_id', 'person_id', 'role'],
+                name='film_work_person_idx'
+            ),
         ]
 
     def __str__(self):
