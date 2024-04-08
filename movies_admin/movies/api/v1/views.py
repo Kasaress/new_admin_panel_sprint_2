@@ -8,7 +8,6 @@ from movies.models import Filmwork
 
 
 class MoviesApiMixin:
-    model = Filmwork
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -79,4 +78,4 @@ class MoviesDetailApi(MoviesApiMixin, DetailView):
     pk_url_kwarg = 'id'
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        return super().get_object()
+        return self.object
